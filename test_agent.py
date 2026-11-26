@@ -1,4 +1,4 @@
-"""Day 3 automated tests for self-healing ReAct loop and cross-session memory speedup."""
+"""Test ReAct self-healing, cross-session speedup, and loop step caps."""
 
 from __future__ import annotations
 

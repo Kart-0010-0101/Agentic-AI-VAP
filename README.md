@@ -1,16 +1,16 @@
-# Day 3 — Closed-Loop ReAct Agent, Self-Healing Tools & Episodic Memory
+# Day 3 — Closed-Loop ReAct Agent, Safe Tools, and Memory
 
-Welcome to Day 3 of **AGENTIC AI VAP**. Today transitions from static RAG pipelines to an autonomous `while`-loop ReAct agent with structured error recovery and cross-session After-Action Review (AAR) memory.
+Welcome to Day 3 of **AGENTIC AI VAP**. This branch builds a closed-loop ReAct agent with safe Python tools and cross-session ChromaDB memory.
 
-## Contents
-- `tools.py` — Defensive tools (`list_dir`, `read_file`, `search_kb`, `write_report`) returning actionable JSON hints on failure
-- `memory.py` — Persistent ChromaDB episodic memory (`store_aar`, `recall`)
-- `aar_engine.py` — Distills concise 1-sentence lessons from traces without raw-log pollution
-- `agent.py` — Closed-loop ReAct execution engine (`trace.jsonl`, `max_steps`, `--mock-llm`)
-- `demo_cross_session.py` — Proves Run 2 solves the task in 50% fewer steps using Run 1's AAR
-- `test_agent.py` — Verifies error recovery, trace contracts, speedup, and loop caps
+## Files in This Branch
+- `tools.py` — Sandboxed Python tools (`list_dir`, `read_file`, `search_kb`, `write_report`) that return error hints on missing files
+- `memory.py` — ChromaDB store for short After-Action Review lessons (`store_aar`, `recall`)
+- `aar_engine.py` — Helper that writes a one-sentence lesson from each step log
+- `agent.py` — Bounded ReAct loop (`trace.jsonl`, `max_steps`, `--mock-llm`)
+- `demo_cross_session.py` — Runs the task twice to show faster Run 2 execution from Run 1 memory
+- `test_agent.py` — Tests self-healing recovery, step speedup, and loop caps
 
-## Quick Start
+## Run Commands
 ```powershell
 uv sync
 uv run python demo_cross_session.py --mock-llm

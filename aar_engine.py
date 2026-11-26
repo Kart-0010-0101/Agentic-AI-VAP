@@ -1,10 +1,10 @@
-"""Day 3: Distill concise 1-sentence After-Action Review (AAR) rules from execution traces."""
+"""Write a short one-sentence After-Action Review rule from step traces."""
 
 from __future__ import annotations
 
 
 def distill_aar(goal: str, trace: list[dict], resolved_file: str | None = None) -> str:
-    """Summarize recovered errors and working file paths without log pollution."""
+    """Record fixed file paths and recovered errors without raw log text."""
     errors = [entry["tool"] for entry in trace if entry.get("status") == "error"]
     if resolved_file and errors:
         return f"Inspect '{resolved_file}' directly via read_file instead of guessing missing root filenames."

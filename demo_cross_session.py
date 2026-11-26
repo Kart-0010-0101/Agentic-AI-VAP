@@ -1,4 +1,4 @@
-"""Day 3: Demonstrate cross-session episodic speedup across a cold boundary."""
+"""Run the agent twice to show faster step count after cold memory recall."""
 
 from __future__ import annotations
 

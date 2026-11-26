@@ -1,4 +1,4 @@
-"""Day 3: Persistent ChromaDB episodic memory for cross-session AAR recall."""
+"""Save and read short After-Action Review lessons across runs in ChromaDB."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import chromadb
 
 
 class EpisodicMemory:
-    """Stores concise 1-sentence After-Action Review lessons across runs."""
+    """Keep short one-sentence lessons across cold restarts."""
 
     def __init__(self, db_dir: Path, collection_name: str = "episodic_aar") -> None:
         db_dir.mkdir(parents=True, exist_ok=True)

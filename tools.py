@@ -1,4 +1,4 @@
-"""Day 3: Defensive typed Python tools with structured error hints for self-healing."""
+"""Run sandboxed file and search tools that return structured JSON hints on errors."""
 
 from __future__ import annotations
 

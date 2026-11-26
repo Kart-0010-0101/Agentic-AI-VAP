@@ -1,4 +1,4 @@
-"""Day 3 helper: Generate clean workspace telemetry fixtures inside data/."""
+"""Create sample sensor telemetry JSON inside data/."""
 
 from __future__ import annotations
 

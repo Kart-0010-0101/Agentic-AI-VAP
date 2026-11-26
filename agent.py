@@ -1,4 +1,4 @@
-"""Day 3: Closed-loop ReAct Agent with self-healing tool recovery, trace.jsonl, and AAR memory."""
+"""Run a bounded ReAct loop with error recovery, trace logs, and memory."""
 
 from __future__ import annotations
 

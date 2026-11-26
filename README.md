@@ -1,18 +1,13 @@
-# Day 3 — Closed-Loop ReAct Agent, Self-Healing Tools & Episodic Memory
+# Day 4 — All 3 Unassisted Capstone Tracks (IoT, 5G NR, Research)
 
-Welcome to Day 3 of **AGENTIC AI VAP**. Today transitions from static RAG pipelines to an autonomous `while`-loop ReAct agent with structured error recovery and cross-session After-Action Review (AAR) memory.
+Welcome to Day 4 of **AGENTIC AI VAP**. All three capstone problem statements live here as complete, standalone closed-loop systems:
 
-## Contents
-- `tools.py` — Defensive tools (`list_dir`, `read_file`, `search_kb`, `write_report`) returning actionable JSON hints on failure
-- `memory.py` — Persistent ChromaDB episodic memory (`store_aar`, `recall`)
-- `aar_engine.py` — Distills concise 1-sentence lessons from traces without raw-log pollution
-- `agent.py` — Closed-loop ReAct execution engine (`trace.jsonl`, `max_steps`, `--mock-llm`)
-- `demo_cross_session.py` — Proves Run 2 solves the task in 50% fewer steps using Run 1's AAR
-- `test_agent.py` — Verifies error recovery, trace contracts, speedup, and loop caps
+- `capstone_1_iot/` — IoT Sensor Fleet Fault Diagnosis (`read_telemetry`, `query_specs`, `list_dir`, `write_report`)
+- `capstone_2_5g/` — 5G NR gNodeB Radio Triage (`read_kpis`, `query_sla`, `list_dir`, `write_report`)
+- `capstone_3_research/` — Autonomous Research Benchmark Synthesizer (`read_papers`, `query_standards`, `list_dir`, `write_report`)
 
-## Quick Start
+## Quick Verification Across All 3 Capstones
 ```powershell
 uv sync
-uv run python demo_cross_session.py --mock-llm
-uv run pytest test_agent.py -v
+uv run pytest capstone_1_iot/test_tools.py capstone_2_5g/test_tools.py capstone_3_research/test_tools.py -v
 ```

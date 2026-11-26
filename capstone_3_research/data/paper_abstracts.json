@@ -1,0 +1,5 @@
+[
+  {"paper_id": "ECE-2025-101", "title": "Edge Quantized LoRa Anomaly Detector", "latency_ms": 14.2, "f1_score": 0.94, "status": "ok"},
+  {"paper_id": "ECE-2025-102", "title": "Zero-Feedback LLM Chain Study", "latency_ms": 480.0, "f1_score": 0.52, "status": "baseline_low_f1"},
+  {"paper_id": "ECE-2025-103", "title": "Closed-Loop Self-Healing Silicon Verifier", "latency_ms": 22.8, "f1_score": 0.96, "status": "ok"}
+]

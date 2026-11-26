@@ -1,0 +1,5 @@
+[
+  {"cell_id": "GNB-BLR-01", "prb_pct": 62.4, "sinr_db": 18.2, "bler_pct": 1.8, "status": "ok"},
+  {"cell_id": "GNB-BLR-02", "prb_pct": 94.1, "sinr_db": 1.4, "bler_pct": 14.6, "status": "congestion_interference"},
+  {"cell_id": "GNB-BLR-03", "prb_pct": 58.0, "sinr_db": 16.5, "bler_pct": 2.4, "status": "ok"}
+]

@@ -1,0 +1,6 @@
+[
+  {"node_id": "NODE-01", "bus_v": 24.1, "vds_peak_v": 48.0, "temp_c": 46.2, "status": "ok"},
+  {"node_id": "NODE-02", "bus_v": 24.4, "vds_peak_v": 108.5, "temp_c": 94.8, "status": "critical_overvoltage"},
+  {"node_id": "NODE-03", "bus_v": 23.9, "vds_peak_v": 52.3, "temp_c": 49.0, "status": "ok"},
+  {"node_id": "NODE-04", "bus_v": 11.2, "vds_peak_v": 31.0, "temp_c": 79.5, "status": "brownout_warning"}
+]

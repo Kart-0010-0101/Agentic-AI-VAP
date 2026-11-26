@@ -1,9 +1,9 @@
 """Serve anonymous phone polls and live projector charts with Python stdlib.
 
-Routes:
-- Student vote page: /vote
-- Projector display (Basic Auth required): /present
-- API routes: /api/state, /api/vote, /api/admin, /qr.png, /health
+Routes and HTTP Basic Auth roles:
+- Student vote routes (accept student ECE or instructor ECEKART): /, /vote, /style.css, /api/state, /api/vote
+- Instructor routes (accept instructor ECEKART only): /present, /qr.png, /api/admin, and all other paths
+- Platform health probe (public): /health
 """
 
 from __future__ import annotations
@@ -183,9 +183,21 @@ class PollStore:
 
 
 class PollRequestHandler(BaseHTTPRequestHandler):
-    def __init__(self, *args, store: PollStore, qr_bytes: bytes, admin_user: str, admin_pass: str, **kwargs):
+    def __init__(
+        self,
+        *args,
+        store: PollStore,
+        qr_bytes: bytes,
+        student_user: str,
+        student_pass: str,
+        admin_user: str,
+        admin_pass: str,
+        **kwargs,
+    ):
         self.store = store
         self.qr_bytes = qr_bytes
+        self.student_user = student_user
+        self.student_pass = student_pass
         self.admin_user = admin_user
         self.admin_pass = admin_pass
         super().__init__(*args, **kwargs)
@@ -193,27 +205,28 @@ class PollRequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args) -> None:
         return  # Keep console clean during live lectures
 
-    def _check_admin_auth(self) -> bool:
+    def _check_auth(self, allow_student: bool, realm: str) -> bool:
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Basic "):
-            self._send_auth_challenge()
+            self._send_auth_challenge(realm)
             return False
         try:
             decoded = base64.b64decode(auth[6:].strip()).decode("utf-8")
             user, pwd = decoded.split(":", 1)
         except Exception:
-            self._send_auth_challenge()
+            self._send_auth_challenge(realm)
             return False
-        ok = hmac.compare_digest(user, self.admin_user) and hmac.compare_digest(pwd, self.admin_pass)
-        if not ok:
-            self._send_auth_challenge()
+        is_admin = hmac.compare_digest(user, self.admin_user) and hmac.compare_digest(pwd, self.admin_pass)
+        is_student = hmac.compare_digest(user, self.student_user) and hmac.compare_digest(pwd, self.student_pass)
+        if not (is_admin or (allow_student and is_student)):
+            self._send_auth_challenge(realm)
             return False
         return True
 
-    def _send_auth_challenge(self) -> None:
-        body = b"Unauthorized: instructor Basic Auth required."
+    def _send_auth_challenge(self, realm: str) -> None:
+        body = b"Unauthorized: HTTP Basic Auth required."
         self.send_response(401)
-        self.send_header("WWW-Authenticate", 'Basic realm="VAP Poll Instructor"')
+        self.send_header("WWW-Authenticate", f'Basic realm="{realm}"')
         self.send_header("Content-Type", "text/plain; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -251,8 +264,12 @@ class PollRequestHandler(BaseHTTPRequestHandler):
         if route == "/health":
             self._send_json(200, {"ok": True})
             return
-        if not self._check_admin_auth():
+        if route in ("/", "/vote", "/style.css", "/api/state"):
+            if not self._check_auth(allow_student=True, realm="VAP Live Poll"):
+                return
+        elif not self._check_auth(allow_student=False, realm="VAP Poll Admin"):
             return
+
         if route in ("/", "/vote"):
             self._serve_static("vote.html")
         elif route == "/present":
@@ -267,9 +284,13 @@ class PollRequestHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Route not found"})
 
     def do_POST(self) -> None:
-        if not self._check_admin_auth():
-            return
         route = urlparse(self.path).path
+        if route == "/api/vote":
+            if not self._check_auth(allow_student=True, realm="VAP Live Poll"):
+                return
+        elif not self._check_auth(allow_student=False, realm="VAP Poll Admin"):
+            return
+
         data = self._read_json_body()
         if data is None:
             self._send_json(400, {"error": "Invalid JSON payload"})
@@ -300,6 +321,8 @@ def create_server(
     state_file: Path | None = None,
     admin_user: str | None = None,
     admin_pass: str | None = None,
+    student_user: str | None = None,
+    student_pass: str | None = None,
 ) -> tuple[PollHTTPServer, PollStore, bytes]:
     lan_ip = detect_lan_ip()
     env_url = os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL")
@@ -307,9 +330,17 @@ def create_server(
     join_url = base if base.endswith("/vote") else f"{base}/vote"
     store = PollStore(state_file=state_file, join_url=join_url)
     qr_bytes = render_qr_png(join_url)
-    user = admin_user if admin_user is not None else os.environ.get("POLL_ADMIN_USER", "ECE")
-    pwd = admin_pass if admin_pass is not None else os.environ.get("POLL_ADMIN_PASS", "december30")
-    handler = partial(PollRequestHandler, store=store, qr_bytes=qr_bytes, admin_user=user, admin_pass=pwd)
+    s_user = student_user if student_user is not None else os.environ.get("POLL_STUDENT_USER", "ECE")
+    s_pass = student_pass if student_pass is not None else os.environ.get("POLL_STUDENT_PASS", "december30")
+    a_user = admin_user if admin_user is not None else os.environ.get("POLL_ADMIN_USER", "ECEKART")
+    a_pass = admin_pass if admin_pass is not None else os.environ.get("POLL_ADMIN_PASS", "WasteOfTimeGG")
+    auth_kwargs = dict(
+        student_user=s_user,
+        student_pass=s_pass,
+        admin_user=a_user,
+        admin_pass=a_pass,
+    )
+    handler = partial(PollRequestHandler, store=store, qr_bytes=qr_bytes, **auth_kwargs)
     server = PollHTTPServer((host, port), handler)
     actual_port = server.server_address[1]
     if port == 0 and not (public_url or env_url):
@@ -317,7 +348,7 @@ def create_server(
         store.join_url = join_url
         qr_bytes = render_qr_png(join_url)
         server.RequestHandlerClass = partial(
-            PollRequestHandler, store=store, qr_bytes=qr_bytes, admin_user=user, admin_pass=pwd
+            PollRequestHandler, store=store, qr_bytes=qr_bytes, **auth_kwargs
         )
     return server, store, qr_bytes
 

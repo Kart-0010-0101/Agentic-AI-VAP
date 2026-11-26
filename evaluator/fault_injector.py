@@ -1,4 +1,4 @@
-"""Dynamic fault injector: tests missing-file recovery and corrupt/NaN record isolation."""
+"""Inject missing files and NaN rows to test student agent recovery."""
 
 from __future__ import annotations
 

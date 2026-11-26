@@ -1,1 +1,1 @@
-"""Automated checker, tester, grader, and per-day exporter for AGENTIC AI VAP."""
+"""Check, test, grade, and export VAP student work."""

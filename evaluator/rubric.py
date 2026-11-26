@@ -1,4 +1,4 @@
-"""100-point weighted rubric calculator with explicit hardcoded-chain (0/20) & secret penalties."""
+"""Calculate 100-point scores and subtract penalties for missing loops or secrets."""
 
 from __future__ import annotations
 

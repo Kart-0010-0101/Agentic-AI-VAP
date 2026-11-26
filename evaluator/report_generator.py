@@ -1,4 +1,4 @@
-"""Generate crisp Markdown and JSON student evaluation reports."""
+"""Write Markdown and JSON grading reports for one student submission."""
 
 from __future__ import annotations
 

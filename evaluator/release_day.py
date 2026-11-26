@@ -1,4 +1,4 @@
-"""Export a single day's Git branch via `git archive` so students download ONLY that day's files."""
+"""Export one Git branch as a ZIP archive with `git archive`."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Unified CLI for VAP submission evaluation, batch CSV grading, and per-day student ZIP release."""
+"""Command-line tool to grade repos, build CSV scores, and export daily ZIP files."""
 
 from __future__ import annotations
 

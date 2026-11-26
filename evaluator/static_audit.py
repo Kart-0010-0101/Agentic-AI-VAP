@@ -1,4 +1,4 @@
-"""AST-based ReAct loop audit, hardcoded linear-chain detector, and zero-trust secret scanner."""
+"""Check Python AST loops, missing docs, and leaked API secrets."""
 
 from __future__ import annotations
 

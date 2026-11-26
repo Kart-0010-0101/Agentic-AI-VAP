@@ -1,4 +1,4 @@
-"""Evaluate one repository or batch-grade a folder of student repositories into a CSV leaderboard."""
+"""Grade one submission or a full student cohort folder into CSV."""
 
 from __future__ import annotations
 

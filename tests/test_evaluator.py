@@ -1,4 +1,4 @@
-"""Automated tests for static audit, rubric penalties, full grading, and single-day ZIP export."""
+"""Test AST checks, rubric penalties, full grading, and daily ZIP exports."""
 
 from __future__ import annotations
 

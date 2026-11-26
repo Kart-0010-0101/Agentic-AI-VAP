@@ -1,4 +1,4 @@
-"""Grade Project 1 (Vector RAG): ingestion idempotency and retrieval precision."""
+"""Grade Project 1 RAG: check idempotent upsert and retrieval accuracy."""
 
 from __future__ import annotations
 

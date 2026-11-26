@@ -1,4 +1,4 @@
-"""Load student submission from a local path or Git repository URL into an isolated sandbox."""
+"""Copy a local folder or clone a Git URL into a temp sandbox."""
 
 from __future__ import annotations
 

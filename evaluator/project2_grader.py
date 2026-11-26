@@ -1,4 +1,4 @@
-"""Grade Project 2 & Capstones: ReAct trace contract & cross-session episodic speedup."""
+"""Grade ReAct trace logs and cross-session memory step speedup."""
 
 from __future__ import annotations
 

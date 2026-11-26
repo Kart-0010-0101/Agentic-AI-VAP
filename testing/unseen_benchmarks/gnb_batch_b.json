@@ -1,0 +1,5 @@
+[
+  {"cell_id": "GNB-B01", "prb_pct": 54.0, "sinr_db": 19.1, "bler_pct": 1.2},
+  {"cell_id": "GNB-B02", "prb_pct": 96.2, "sinr_db": -1.2, "bler_pct": 18.4},
+  {"cell_id": "GNB-B03", "prb_pct": "NaN", "sinr_db": 11.0, "bler_pct": 2.0}
+]

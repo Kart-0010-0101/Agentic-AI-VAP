@@ -1,0 +1,5 @@
+[
+  {"paper_id": "ECE-B01", "title": "Deterministic Closed-Loop Silicon Monitor", "latency_ms": 18.5, "f1_score": 0.95},
+  {"paper_id": "ECE-B02", "title": "Unbounded Chain Latency Benchmark", "latency_ms": 620.0, "f1_score": 0.48},
+  {"paper_id": "ECE-B03", "title": "Corrupt Metrics Entry", "latency_ms": null, "f1_score": 0.91}
+]

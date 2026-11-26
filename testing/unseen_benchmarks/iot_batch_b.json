@@ -1,0 +1,6 @@
+[
+  {"node_id": "BATCHB-01", "bus_v": 24.0, "vds_peak_v": 51.2, "temp_c": 44.0, "status": "ok"},
+  {"node_id": "BATCHB-02", "bus_v": "NaN", "vds_peak_v": 60.0, "temp_c": 52.0, "status": "corrupt"},
+  {"node_id": "BATCHB-03", "bus_v": 23.8, "vds_peak_v": 118.2, "temp_c": 112.4, "status": "critical_fault"},
+  {"bad_key": "malformed_row"}
+]

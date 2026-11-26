@@ -1,13 +1,17 @@
-# Day 4 — All 3 Unassisted Capstone Tracks (IoT, 5G NR, Research)
+# Day 5 — Verification, Fault Injection & Live Defense Suite
 
-Welcome to Day 4 of **AGENTIC AI VAP**. All three capstone problem statements live here as complete, standalone closed-loop systems:
+Welcome to Day 5 of **AGENTIC AI VAP**. This branch hardens all 3 capstones against unseen malformed telemetry and adds the full verification test harness under `testing/`.
 
-- `capstone_1_iot/` — IoT Sensor Fleet Fault Diagnosis (`read_telemetry`, `query_specs`, `list_dir`, `write_report`)
-- `capstone_2_5g/` — 5G NR gNodeB Radio Triage (`read_kpis`, `query_sla`, `list_dir`, `write_report`)
-- `capstone_3_research/` — Autonomous Research Benchmark Synthesizer (`read_papers`, `query_standards`, `list_dir`, `write_report`)
+## Testing Suite (`testing/`)
+- `testing/unseen_benchmarks/` — Unseen Batch B datasets (`iot_batch_b.json`, `gnb_batch_b.json`, `papers_batch_b.json`, `corrupt_malformed.json`)
+- `testing/test_fault_injection.py` — Validates graceful `NaN` / corrupt JSON quarantine without tracebacks
+- `testing/test_cross_session_memory.py` — Verifies cross-session AAR speedup across all 3 capstones
+- `testing/test_trace_contract.py` — Enforces strict `trace.jsonl` telemetry schema
+- `testing/test_repo_hygiene.py` — Zero-trust secret & `.env` hygiene verification
+- `testing/run_all_tests.py` — Master verification harness
 
-## Quick Verification Across All 3 Capstones
+## Run All Checks
 ```powershell
 uv sync
-uv run pytest capstone_1_iot/test_tools.py capstone_2_5g/test_tools.py capstone_3_research/test_tools.py -v
+uv run python testing/run_all_tests.py
 ```

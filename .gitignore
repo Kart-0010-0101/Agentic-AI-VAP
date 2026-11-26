@@ -1,0 +1,19 @@
+# Secrets & local environments
+.env
+.env.local
+.venv/
+
+# Python bytecode & caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Local vector stores & runtime artifacts
+chroma_db/
+agent_memory/
+capstone_memory/
+out/
+*.jsonl
+poll_state.json
+qr_poll_join.png

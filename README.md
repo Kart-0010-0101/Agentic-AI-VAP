@@ -20,9 +20,9 @@ uv run python chroma_demo.py
 ```
 
 ## Run the Live Poll (Cloud or Class Wi-Fi)
-- Deploy branch `day-1` on **Render.com** with `render.yaml` (Docker Free plan).
-- Presenter login on `/present`: username `ECE`, password `december30`.
-- Student voting link: `/vote` (works across mobile 4G/5G and supports 100 concurrent phones).
+- Deploy branch `day-1` on **Render.com** with `python live_poll/poll_server.py`.
+- Login prompt opens immediately on `/` and `/vote` (username `ECE`, password `december30`).
+- Supports 100 concurrent phones across mobile data and any Wi-Fi.
 ```powershell
 uv run python live_poll/poll_server.py --port 8765
 uv run pytest live_poll/test_poll.py -v

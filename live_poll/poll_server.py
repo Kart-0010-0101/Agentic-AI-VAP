@@ -248,43 +248,39 @@ class PollRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         route = urlparse(self.path).path
+        if route == "/health":
+            self._send_json(200, {"ok": True})
+            return
+        if not self._check_admin_auth():
+            return
         if route in ("/", "/vote"):
             self._serve_static("vote.html")
         elif route == "/present":
-            if self._check_admin_auth():
-                self._serve_static("present.html")
+            self._serve_static("present.html")
         elif route == "/style.css":
             self._serve_static("style.css")
         elif route == "/qr.png":
             self._send_bytes(200, "image/png", self.qr_bytes)
         elif route == "/api/state":
             self._send_json(200, self.store.snapshot())
-        elif route == "/health":
-            self._send_json(200, {"ok": True})
         else:
             self._send_json(404, {"error": "Route not found"})
 
     def do_POST(self) -> None:
-        route = urlparse(self.path).path
-        if route == "/api/admin":
-            if not self._check_admin_auth():
-                return
-            data = self._read_json_body()
-            if data is None:
-                self._send_json(400, {"error": "Invalid JSON payload"})
-                return
-            action = str(data.get("action", ""))
-            poll_idx = data.get("poll_idx")
-            ok, msg, snap = self.store.admin(action, int(poll_idx) if poll_idx is not None else None)
-            self._send_json(200 if ok else 400, snap if ok else {"error": msg})
+        if not self._check_admin_auth():
             return
-
+        route = urlparse(self.path).path
         data = self._read_json_body()
         if data is None:
             self._send_json(400, {"error": "Invalid JSON payload"})
             return
 
-        if route == "/api/vote":
+        if route == "/api/admin":
+            action = str(data.get("action", ""))
+            poll_idx = data.get("poll_idx")
+            ok, msg, snap = self.store.admin(action, int(poll_idx) if poll_idx is not None else None)
+            self._send_json(200 if ok else 400, snap if ok else {"error": msg})
+        elif route == "/api/vote":
             try:
                 poll_id = int(data["poll_id"])
                 opt_idx = int(data["option_idx"])

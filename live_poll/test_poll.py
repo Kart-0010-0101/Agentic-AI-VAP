@@ -1,4 +1,4 @@
-"""Test Basic Auth, poll controls, and 100 concurrent student votes."""
+"""Test full-site Basic Auth challenge, poll controls, and 100 concurrent votes."""
 
 import base64
 from concurrent.futures import ThreadPoolExecutor
@@ -29,37 +29,46 @@ def test_live_poll_basic_auth_and_end_to_end():
     base = f"http://127.0.0.1:{port}"
     creds = ("ECE", "december30")
     try:
-        # Public student & health routes work with no credentials
-        for path, ctype_hint in [("/vote", "text/html"), ("/style.css", "text/css"), ("/health", "application/json")]:
-            st, ct, body = _req(base + path)
-            assert st == 200 and ctype_hint in ct and len(body) > 5
+        # Health probe works without auth for Render platform checks
+        st, ct, _ = _req(base + "/health")
+        assert st == 200 and "application/json" in ct
 
-        # Projector & admin endpoints require Basic Auth
-        for protected_path, method, payload in [("/present", "GET", None), ("/api/admin", "POST", {"action": "next"})]:
+        # Root and all app routes require Basic Auth popup first
+        protected = [
+            ("/", "GET", None),
+            ("/vote", "GET", None),
+            ("/present", "GET", None),
+            ("/api/state", "GET", None),
+            ("/api/vote", "POST", {"poll_id": 1, "option_idx": 0}),
+            ("/api/admin", "POST", {"action": "next"}),
+        ]
+        for path, method, payload in protected:
             try:
-                _req(base + protected_path, method=method, payload=payload)
-                raise AssertionError(f"Expected 401 on {protected_path}")
+                _req(base + path, method=method, payload=payload)
+                raise AssertionError(f"Expected 401 on {path}")
             except urllib.error.HTTPError as exc:
                 assert exc.code == 401
 
             try:
-                _req(base + protected_path, method=method, payload=payload, auth=("ECE", "wrong"))
-                raise AssertionError(f"Expected 401 for bad password on {protected_path}")
+                _req(base + path, method=method, payload=payload, auth=("ECE", "wrong"))
+                raise AssertionError(f"Expected 401 for bad password on {path}")
             except urllib.error.HTTPError as exc:
                 assert exc.code == 401
 
-        st, ct, _ = _req(base + "/present", auth=creds)
-        assert st == 200 and "text/html" in ct
+        for path, ctype_hint in [("/", "text/html"), ("/vote", "text/html"), ("/present", "text/html"), ("/style.css", "text/css")]:
+            st, ct, body = _req(base + path, auth=creds)
+            assert st == 200 and ctype_hint in ct and len(body) > 50
 
-        st, ct, qr_bytes = _req(base + "/qr.png")
+        st, ct, qr_bytes = _req(base + "/qr.png", auth=creds)
         assert st == 200 and ct == "image/png" and qr_bytes.startswith(b"\x89PNG")
 
-        # Simulate 100 concurrent student phones voting simultaneously across networks
+        # 100 concurrent authenticated phones vote safely with zero race conditions
         def _cast(i: int) -> int:
             status, _, _ = _req(
                 base + "/api/vote",
                 method="POST",
                 payload={"poll_id": 1, "option_idx": i % 3},
+                auth=creds,
             )
             return status
 
@@ -67,12 +76,10 @@ def test_live_poll_basic_auth_and_end_to_end():
             statuses = list(pool.map(_cast, range(100)))
         assert all(s == 200 for s in statuses)
 
-        st, _, raw = _req(base + "/api/state")
+        st, _, raw = _req(base + "/api/state", auth=creds)
         state = json.loads(raw)
-        assert st == 200 and state["poll"]["total_votes"] == 100
-        assert sum(state["poll"]["counts"]) == 100
+        assert st == 200 and state["poll"]["total_votes"] == 100 and sum(state["poll"]["counts"]) == 100
 
-        # Authorized admin navigation & reset
         st, _, raw = _req(base + "/api/admin", method="POST", payload={"action": "next"}, auth=creds)
         assert st == 200 and json.loads(raw)["poll"]["id"] == 2
 

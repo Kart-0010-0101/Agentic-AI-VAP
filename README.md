@@ -1,17 +1,18 @@
-# Day 2 — Project 1: End-to-End ECE Vector RAG Pipeline
+# Day 3 — Closed-Loop ReAct Agent, Self-Healing Tools & Episodic Memory
 
-Welcome to Day 2 of **AGENTIC AI VAP**. Today builds a production-clean, idempotent **Vector RAG** pipeline over real ECE datasheets.
+Welcome to Day 3 of **AGENTIC AI VAP**. Today transitions from static RAG pipelines to an autonomous `while`-loop ReAct agent with structured error recovery and cross-session After-Action Review (AAR) memory.
 
 ## Contents
-- `knowledge_base/` — 4 technical ECE documents (`irf540n_mosfet.md`, `esp32_s3_datasheet.md`, `5g_nr_prb_spec.md`, `lorawan_bms_notes.md`)
-- `ingest.py` — Overlapping chunker (`chunk_size=500, overlap=50`) + idempotent `collection.upsert()`
-- `query.py` — Top-k semantic retrieval with distance gating + Groq HTTPS synthesis (`--mock-llm` supported for offline CI)
-- `test_rag.py` — Automated pytest suite verifying overlap, idempotent re-ingestion, and citation accuracy
+- `tools.py` — Defensive tools (`list_dir`, `read_file`, `search_kb`, `write_report`) returning actionable JSON hints on failure
+- `memory.py` — Persistent ChromaDB episodic memory (`store_aar`, `recall`)
+- `aar_engine.py` — Distills concise 1-sentence lessons from traces without raw-log pollution
+- `agent.py` — Closed-loop ReAct execution engine (`trace.jsonl`, `max_steps`, `--mock-llm`)
+- `demo_cross_session.py` — Proves Run 2 solves the task in 50% fewer steps using Run 1's AAR
+- `test_agent.py` — Verifies error recovery, trace contracts, speedup, and loop caps
 
 ## Quick Start
 ```powershell
 uv sync
-uv run python ingest.py
-uv run python query.py "What is the max Vds of IRF540N?" --mock-llm
-uv run pytest test_rag.py -v
+uv run python demo_cross_session.py --mock-llm
+uv run pytest test_agent.py -v
 ```

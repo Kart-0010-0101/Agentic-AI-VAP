@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: agentic-ai-vap-poll
+    runtime: docker
+    plan: free
+    dockerfilePath: ./live_poll/Dockerfile
+    dockerContext: ./live_poll
+    healthCheckPath: /health
+    envVars:
+      - key: POLL_ADMIN_USER
+        value: ECE
+      - key: POLL_ADMIN_PASS
+        value: december30

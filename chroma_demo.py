@@ -1,4 +1,4 @@
-"""Day 1 guided lab: Zero-keyword semantic proximity search with ChromaDB."""
+"""Search short ECE sentences by meaning with ChromaDB."""
 
 from __future__ import annotations
 

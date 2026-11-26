@@ -1,8 +1,9 @@
-"""Minimalist anonymous mobile classroom poll server (pure Python stdlib).
+"""Serve anonymous phone polls and live projector charts with Python stdlib.
 
-Serves a mobile-first student voting view (/vote), a live projector chart
-view (/present), REST endpoints (/api/state, /api/vote, /api/admin), and a
-scannable QR PNG (/qr.png) on a pure white (#FFFFFF) taste-skill surface.
+Routes:
+- Student vote page: /vote
+- Projector display (Basic Auth required): /present
+- API routes: /api/state, /api/vote, /api/admin, /qr.png, /health
 """
 
 from __future__ import annotations

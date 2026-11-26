@@ -1,4 +1,4 @@
-"""Day 1 preflight verification for Groq API HTTPS connectivity and ChromaDB."""
+"""Check Groq API HTTPS access and local ChromaDB setup."""
 
 from __future__ import annotations
 

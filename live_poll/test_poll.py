@@ -1,4 +1,4 @@
-"""Automated integration tests for live poll Basic Auth, endpoints, and 100-user concurrency."""
+"""Test Basic Auth, poll controls, and 100 concurrent student votes."""
 
 import base64
 from concurrent.futures import ThreadPoolExecutor

@@ -46,6 +46,7 @@ def test_live_poll_dual_basic_auth_and_end_to_end():
         all_protected = [
             ("/", "GET", None),
             ("/vote", "GET", None),
+            ("/poll", "GET", None),
             ("/present", "GET", None),
             ("/qr.png", "GET", None),
             ("/api/state", "GET", None),
@@ -58,6 +59,7 @@ def test_live_poll_dual_basic_auth_and_end_to_end():
 
         # Student credentials must be rejected on instructor/admin and unknown routes
         for path, method, payload in [
+            ("/poll", "GET", None),
             ("/present", "GET", None),
             ("/qr.png", "GET", None),
             ("/api/admin", "POST", {"action": "next"}),
@@ -72,6 +74,7 @@ def test_live_poll_dual_basic_auth_and_end_to_end():
 
         # Instructor credentials unlock projector routes as well as /, /vote, /style.css, /api/state
         for path, ctype_hint in [
+            ("/poll", "text/html"),
             ("/present", "text/html"),
             ("/", "text/html"),
             ("/vote", "text/html"),

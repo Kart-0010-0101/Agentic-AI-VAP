@@ -22,7 +22,7 @@ uv run python chroma_demo.py
 ## Run the Live Poll (Cloud or Class Wi-Fi)
 - Deploy branch `day-1` on **Render.com** with `python live_poll/poll_server.py`.
 - Login prompt opens immediately on `/` and `/vote` (student username `ECE`, password `december30`).
-- Projector display (`/present`), QR image (`/qr.png`), and admin controls (`/api/admin`) require instructor credentials (`ECEKART` / `WasteOfTimeGG`).
+- Projector display (`/poll` and `/present`), QR image (`/qr.png`), and admin controls (`/api/admin`) require instructor credentials (`ECEKART` / `WasteOfTimeGG`).
 - Supports 100 concurrent phones across mobile data and any Wi-Fi.
 ```powershell
 uv run python live_poll/poll_server.py --port 8765

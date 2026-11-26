@@ -2,7 +2,7 @@
 
 Routes and HTTP Basic Auth roles:
 - Student vote routes (accept student ECE or instructor ECEKART): /, /vote, /style.css, /api/state, /api/vote
-- Instructor routes (accept instructor ECEKART only): /present, /qr.png, /api/admin, and all other paths
+- Instructor routes (accept instructor ECEKART only): /poll, /present, /qr.png, /api/admin, and all other paths
 - Platform health probe (public): /health
 """
 
@@ -272,7 +272,7 @@ class PollRequestHandler(BaseHTTPRequestHandler):
 
         if route in ("/", "/vote"):
             self._serve_static("vote.html")
-        elif route == "/present":
+        elif route in ("/present", "/poll"):
             self._serve_static("present.html")
         elif route == "/style.css":
             self._serve_static("style.css")
@@ -377,7 +377,7 @@ def main() -> None:
     sf = Path(args.state_file) if args.state_file else None
     server, store, _ = create_server(args.host, args.port, args.public_url, sf)
     print(f"Student vote URL  : {store.join_url}")
-    print(f"Projector display : http://127.0.0.1:{args.port}/present (Basic Auth protected)")
+    print(f"Projector display : http://127.0.0.1:{args.port}/poll (or /present, Basic Auth protected)")
     print("Press Ctrl+C to stop server.")
     try:
         server.serve_forever()

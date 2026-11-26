@@ -1,4 +1,4 @@
-"""Day 5 single-command verification runner across all unit, capstone & fault suites."""
+"""Run all unit, capstone, and Day 5 fault test suites."""
 
 from __future__ import annotations
 

@@ -1,22 +1,34 @@
-"""Minimalist anonymous mobile classroom poll server (pure Python stdlib).
+"""Serve anonymous phone polls and live projector charts with Python stdlib.
 
-Serves a mobile-first student voting view (/vote), a live projector chart
-view (/present), REST endpoints (/api/state, /api/vote, /api/admin), and a
-scannable QR PNG (/qr.png) on a pure white (#FFFFFF) taste-skill surface.
+Routes:
+- Student vote page: /vote
+- Projector display (Basic Auth required): /present
+- API routes: /api/state, /api/vote, /api/admin, /qr.png, /health
 """
 
 from __future__ import annotations
 
 import argparse
+import base64
 from functools import partial
+import hmac
 import io
 import json
 import mimetypes
+import os
 from pathlib import Path
 import socket
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
+
+
+class PollHTTPServer(ThreadingHTTPServer):
+    """High-backlog threaded server sized for 100+ concurrent student mobile votes."""
+
+    request_queue_size = 128
+    daemon_threads = True
+    allow_reuse_address = True
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -171,13 +183,41 @@ class PollStore:
 
 
 class PollRequestHandler(BaseHTTPRequestHandler):
-    def __init__(self, *args, store: PollStore, qr_bytes: bytes, **kwargs):
+    def __init__(self, *args, store: PollStore, qr_bytes: bytes, admin_user: str, admin_pass: str, **kwargs):
         self.store = store
         self.qr_bytes = qr_bytes
+        self.admin_user = admin_user
+        self.admin_pass = admin_pass
         super().__init__(*args, **kwargs)
 
     def log_message(self, format: str, *args) -> None:
         return  # Keep console clean during live lectures
+
+    def _check_admin_auth(self) -> bool:
+        auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Basic "):
+            self._send_auth_challenge()
+            return False
+        try:
+            decoded = base64.b64decode(auth[6:].strip()).decode("utf-8")
+            user, pwd = decoded.split(":", 1)
+        except Exception:
+            self._send_auth_challenge()
+            return False
+        ok = hmac.compare_digest(user, self.admin_user) and hmac.compare_digest(pwd, self.admin_pass)
+        if not ok:
+            self._send_auth_challenge()
+            return False
+        return True
+
+    def _send_auth_challenge(self) -> None:
+        body = b"Unauthorized: instructor Basic Auth required."
+        self.send_response(401)
+        self.send_header("WWW-Authenticate", 'Basic realm="VAP Poll Instructor"')
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _send_bytes(self, status: int, content_type: str, body: bytes) -> None:
         self.send_response(status)
@@ -211,18 +251,34 @@ class PollRequestHandler(BaseHTTPRequestHandler):
         if route in ("/", "/vote"):
             self._serve_static("vote.html")
         elif route == "/present":
-            self._serve_static("present.html")
+            if self._check_admin_auth():
+                self._serve_static("present.html")
         elif route == "/style.css":
             self._serve_static("style.css")
         elif route == "/qr.png":
             self._send_bytes(200, "image/png", self.qr_bytes)
         elif route == "/api/state":
             self._send_json(200, self.store.snapshot())
+        elif route == "/health":
+            self._send_json(200, {"ok": True})
         else:
             self._send_json(404, {"error": "Route not found"})
 
     def do_POST(self) -> None:
         route = urlparse(self.path).path
+        if route == "/api/admin":
+            if not self._check_admin_auth():
+                return
+            data = self._read_json_body()
+            if data is None:
+                self._send_json(400, {"error": "Invalid JSON payload"})
+                return
+            action = str(data.get("action", ""))
+            poll_idx = data.get("poll_idx")
+            ok, msg, snap = self.store.admin(action, int(poll_idx) if poll_idx is not None else None)
+            self._send_json(200 if ok else 400, snap if ok else {"error": msg})
+            return
+
         data = self._read_json_body()
         if data is None:
             self._send_json(400, {"error": "Invalid JSON payload"})
@@ -237,11 +293,6 @@ class PollRequestHandler(BaseHTTPRequestHandler):
                 return
             ok, msg, snap = self.store.vote(poll_id, opt_idx)
             self._send_json(200 if ok else 400, snap if ok else {"error": msg})
-        elif route == "/api/admin":
-            action = str(data.get("action", ""))
-            poll_idx = data.get("poll_idx")
-            ok, msg, snap = self.store.admin(action, int(poll_idx) if poll_idx is not None else None)
-            self._send_json(200 if ok else 400, snap if ok else {"error": msg})
         else:
             self._send_json(404, {"error": "Route not found"})
 
@@ -251,35 +302,44 @@ def create_server(
     port: int = 8765,
     public_url: str | None = None,
     state_file: Path | None = None,
-) -> tuple[ThreadingHTTPServer, PollStore, bytes]:
+    admin_user: str | None = None,
+    admin_pass: str | None = None,
+) -> tuple[PollHTTPServer, PollStore, bytes]:
     lan_ip = detect_lan_ip()
-    base = (public_url or f"http://{lan_ip}:{port}").rstrip("/")
+    env_url = os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL")
+    base = (public_url or env_url or f"http://{lan_ip}:{port}").rstrip("/")
     join_url = base if base.endswith("/vote") else f"{base}/vote"
     store = PollStore(state_file=state_file, join_url=join_url)
     qr_bytes = render_qr_png(join_url)
-    handler = partial(PollRequestHandler, store=store, qr_bytes=qr_bytes)
-    server = ThreadingHTTPServer((host, port), handler)
+    user = admin_user if admin_user is not None else os.environ.get("POLL_ADMIN_USER", "ECE")
+    pwd = admin_pass if admin_pass is not None else os.environ.get("POLL_ADMIN_PASS", "december30")
+    handler = partial(PollRequestHandler, store=store, qr_bytes=qr_bytes, admin_user=user, admin_pass=pwd)
+    server = PollHTTPServer((host, port), handler)
     actual_port = server.server_address[1]
-    if port == 0 and not public_url:
+    if port == 0 and not (public_url or env_url):
         join_url = f"http://{lan_ip}:{actual_port}/vote"
         store.join_url = join_url
         qr_bytes = render_qr_png(join_url)
-        server.RequestHandlerClass = partial(PollRequestHandler, store=store, qr_bytes=qr_bytes)
+        server.RequestHandlerClass = partial(
+            PollRequestHandler, store=store, qr_bytes=qr_bytes, admin_user=user, admin_pass=pwd
+        )
     return server, store, qr_bytes
 
 
 def main() -> None:
+    default_port = int(os.environ.get("PORT", "8765"))
     parser = argparse.ArgumentParser(description="Anonymous classroom mobile poll server")
     parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--public-url", default=None, help="Override base URL for QR (e.g. cloudflare tunnel)")
+    parser.add_argument("--port", type=int, default=default_port)
+    parser.add_argument("--public-url", default=None, help="Override base URL for QR (e.g. Render HTTPS URL)")
     parser.add_argument("--state-file", default=None, help="Optional JSON file for vote persistence")
     parser.add_argument("--export-qr", default=None, help="Write QR PNG to path and exit immediately")
     args = parser.parse_args()
 
     if args.export_qr:
         lan_ip = detect_lan_ip()
-        base = (args.public_url or f"http://{lan_ip}:{args.port}").rstrip("/")
+        env_url = os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL")
+        base = (args.public_url or env_url or f"http://{lan_ip}:{args.port}").rstrip("/")
         join_url = base if base.endswith("/vote") else f"{base}/vote"
         out = Path(args.export_qr)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -290,7 +350,7 @@ def main() -> None:
     sf = Path(args.state_file) if args.state_file else None
     server, store, _ = create_server(args.host, args.port, args.public_url, sf)
     print(f"Student vote URL  : {store.join_url}")
-    print(f"Projector display : http://127.0.0.1:{args.port}/present")
+    print(f"Projector display : http://127.0.0.1:{args.port}/present (Basic Auth protected)")
     print("Press Ctrl+C to stop server.")
     try:
         server.serve_forever()

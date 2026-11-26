@@ -1,4 +1,4 @@
-"""Day 2: Vector RAG semantic retriever and grounded Groq/mock answer synthesizer."""
+"""Retrieve matching ECE chunks from ChromaDB and write cited replies."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def retrieve_context(
     max_distance: float = 1.65,
     collection_name: str = "ece_knowledge",
 ) -> list[dict]:
-    """Query persistent ChromaDB and return relevant source chunks within distance cap."""
+    """Query ChromaDB and keep chunks within the max distance cap."""
     if not question.strip():
         return []
     client = chromadb.PersistentClient(path=str(db_dir))
@@ -42,7 +42,7 @@ def retrieve_context(
 
 
 def synthesize_answer(question: str, chunks: list[dict], mock_llm: bool = False) -> str:
-    """Generate a citation-grounded answer from retrieved chunks."""
+    """Write a cited answer using only retrieved text chunks."""
     if not chunks:
         return "Insufficient evidence in the indexed knowledge base to answer that question."
 

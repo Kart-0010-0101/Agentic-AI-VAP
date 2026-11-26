@@ -1,4 +1,4 @@
-"""Day 5 fault-injection tests across all 3 capstones using unseen corrupt Batch B benchmarks."""
+"""Test unseen Batch B fault injection and broken JSON handling across all capstones."""
 
 from __future__ import annotations
 

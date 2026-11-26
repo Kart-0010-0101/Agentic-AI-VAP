@@ -1,4 +1,4 @@
-"""Day 5 cross-session episodic memory speedup verification across all 3 tracks."""
+"""Test cross-session ChromaDB memory step reduction across all three capstones."""
 
 from __future__ import annotations
 

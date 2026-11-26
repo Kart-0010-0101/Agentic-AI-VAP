@@ -1,4 +1,4 @@
-"""Day 5 trace.jsonl schema & ReAct loop contract verification."""
+"""Test trace.jsonl key schema and step sequence across all three tracks."""
 
 from __future__ import annotations
 

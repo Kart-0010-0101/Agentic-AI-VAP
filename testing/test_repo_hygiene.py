@@ -1,4 +1,4 @@
-"""Day 5 zero-trust repository hygiene check (no .env leaks or hardcoded API secrets)."""
+"""Check that the repository contains zero .env files or hardcoded API keys."""
 
 from __future__ import annotations
 

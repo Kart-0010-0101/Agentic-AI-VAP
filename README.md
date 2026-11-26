@@ -1,14 +1,14 @@
-# Day 5 — Verification, Fault Injection & Live Defense Suite
+# Day 5 — Fault Injection, Unseen Tests, and Live Defense
 
-Welcome to Day 5 of **AGENTIC AI VAP**. This branch hardens all 3 capstones against unseen malformed telemetry and adds the full verification test harness under `testing/`.
+Welcome to Day 5 of **AGENTIC AI VAP**. This branch adds toxic JSON fault handling across all three capstones and provides the `testing/` suite.
 
-## Testing Suite (`testing/`)
-- `testing/unseen_benchmarks/` — Unseen Batch B datasets (`iot_batch_b.json`, `gnb_batch_b.json`, `papers_batch_b.json`, `corrupt_malformed.json`)
-- `testing/test_fault_injection.py` — Validates graceful `NaN` / corrupt JSON quarantine without tracebacks
-- `testing/test_cross_session_memory.py` — Verifies cross-session AAR speedup across all 3 capstones
-- `testing/test_trace_contract.py` — Enforces strict `trace.jsonl` telemetry schema
-- `testing/test_repo_hygiene.py` — Zero-trust secret & `.env` hygiene verification
-- `testing/run_all_tests.py` — Master verification harness
+## Test Files (`testing/`)
+- `testing/unseen_benchmarks/` — Unseen Batch B files (`iot_batch_b.json`, `gnb_batch_b.json`, `papers_batch_b.json`, `corrupt_malformed.json`)
+- `testing/test_fault_injection.py` — Checks NaN and corrupt JSON quarantine with zero tracebacks
+- `testing/test_cross_session_memory.py` — Checks faster Run 2 steps from ChromaDB memory
+- `testing/test_trace_contract.py` — Checks the 7 fixed JSON keys in `trace.jsonl`
+- `testing/test_repo_hygiene.py` — Checks for leaked `.env` files or API keys
+- `testing/run_all_tests.py` — Runs all 9 test suites and prints the summary table
 
 ## Run All Checks
 ```powershell

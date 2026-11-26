@@ -1,4 +1,4 @@
-"""Day 2: Idempotent sliding-window chunking and ChromaDB ingestion pipeline."""
+"""Split markdown text into chunks and save them safely to ChromaDB."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ def ingest_directory(
     chunk_size: int = 500,
     overlap: int = 50,
 ) -> int:
-    """Ingest all .md/.txt files in kb_dir into persistent ChromaDB using idempotent upsert."""
+    """Save .md and .txt files into ChromaDB with idempotent upsert."""
     db_dir.mkdir(parents=True, exist_ok=True)
     client = chromadb.PersistentClient(path=str(db_dir))
     collection = client.get_or_create_collection(collection_name)

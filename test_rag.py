@@ -1,4 +1,4 @@
-"""Day 2 automated tests verifying chunk overlap, idempotent upsert, and grounded retrieval."""
+"""Test chunk overlap, idempotent upsert, and grounded citations."""
 
 from __future__ import annotations
 

@@ -1,14 +1,14 @@
-# Day 2 — Project 1: End-to-End ECE Vector RAG Pipeline
+# Day 2 — Project 1: ECE Vector RAG Pipeline
 
-Welcome to Day 2 of **AGENTIC AI VAP**. Today builds a production-clean, idempotent **Vector RAG** pipeline over real ECE datasheets.
+Welcome to Day 2 of **AGENTIC AI VAP**. This branch builds an idempotent Vector RAG tool over technical ECE datasheets.
 
-## Contents
-- `knowledge_base/` — 4 technical ECE documents (`irf540n_mosfet.md`, `esp32_s3_datasheet.md`, `5g_nr_prb_spec.md`, `lorawan_bms_notes.md`)
-- `ingest.py` — Overlapping chunker (`chunk_size=500, overlap=50`) + idempotent `collection.upsert()`
-- `query.py` — Top-k semantic retrieval with distance gating + Groq HTTPS synthesis (`--mock-llm` supported for offline CI)
-- `test_rag.py` — Automated pytest suite verifying overlap, idempotent re-ingestion, and citation accuracy
+## Files in This Branch
+- `knowledge_base/` — Four ECE technical docs (`irf540n_mosfet.md`, `esp32_s3_datasheet.md`, `5g_nr_prb_spec.md`, `lorawan_bms_notes.md`)
+- `ingest.py` — Chunk text with 50-char overlap and run `collection.upsert()` safely
+- `query.py` — Find top-k chunks within distance limits and generate cited Groq replies (`--mock-llm` runs offline)
+- `test_rag.py` — Automated pytest suite for overlap, idempotency, and citations
 
-## Quick Start
+## Run Commands
 ```powershell
 uv sync
 uv run python ingest.py

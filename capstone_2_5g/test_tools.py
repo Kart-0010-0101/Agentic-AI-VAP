@@ -1,4 +1,4 @@
-"""Capstone 2 (5G NR) automated verification suite."""
+"""Capstone 2 (5G NR): Test KPI quarantine, path recovery, and memory recall."""
 
 from __future__ import annotations
 

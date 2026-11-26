@@ -1,4 +1,4 @@
-"""Capstone 1 (IoT Fleet): Persistent episodic memory wrapper."""
+"""Capstone 1 (IoT Fleet): Save and read short AAR lessons in ChromaDB."""
 
 from __future__ import annotations
 

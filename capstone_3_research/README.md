@@ -1,6 +1,6 @@
-# Capstone 3 — Autonomous ECE Research & Benchmark Synthesizer
+# Capstone 3 — ECE Literature Benchmark Agent
 
-Evaluates technical abstracts against latency and F1 production thresholds, isolates malformed entries, and recalls cross-session lessons.
+Checks research abstracts against edge latency and F1 score targets, isolates bad rows, and recalls AAR rules across runs.
 
 ```powershell
 uv run python capstone_3_research/ingest.py

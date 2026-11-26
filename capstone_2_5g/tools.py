@@ -1,4 +1,4 @@
-"""Capstone 2 (5G NR): 4 typed defensive radio telemetry tools."""
+"""Capstone 2 (5G NR): Four sandboxed radio KPI tools."""
 
 from __future__ import annotations
 

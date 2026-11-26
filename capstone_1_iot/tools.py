@@ -1,4 +1,4 @@
-"""Capstone 1 (IoT Fleet): 4 typed defensive tools with quarantine on corrupt records."""
+"""Capstone 1 (IoT Fleet): Four sandboxed tools that move corrupt rows to quarantine."""
 
 from __future__ import annotations
 

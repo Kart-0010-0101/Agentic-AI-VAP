@@ -1,4 +1,4 @@
-"""Capstone 1 (IoT Fleet): Idempotent domain knowledge ingestion."""
+"""Capstone 1 (IoT Fleet): Save domain rules to ChromaDB safely."""
 
 from __future__ import annotations
 

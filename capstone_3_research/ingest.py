@@ -1,4 +1,4 @@
-"""Capstone 3 (Research): Idempotent benchmark standards ingestion."""
+"""Capstone 3 (Research): Save benchmark rules to ChromaDB safely."""
 
 from __future__ import annotations
 

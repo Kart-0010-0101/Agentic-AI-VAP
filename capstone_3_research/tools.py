@@ -1,4 +1,4 @@
-"""Capstone 3 (Research): 4 typed defensive literature synthesis tools."""
+"""Capstone 3 (Research): Four sandboxed paper benchmark tools."""
 
 from __future__ import annotations
 

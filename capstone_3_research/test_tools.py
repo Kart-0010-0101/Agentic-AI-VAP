@@ -1,4 +1,4 @@
-"""Capstone 3 (Research) automated verification suite."""
+"""Capstone 3 (Research): Test path recovery, null quarantine, and memory speedup."""
 
 from __future__ import annotations
 

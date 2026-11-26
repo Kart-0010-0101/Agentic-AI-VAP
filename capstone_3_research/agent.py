@@ -1,4 +1,4 @@
-"""Capstone 3 (Research): Closed-loop ReAct literature & benchmark synthesis agent."""
+"""Capstone 3 (Research): ReAct loop that screens papers by latency and F1 limits."""
 
 from __future__ import annotations
 

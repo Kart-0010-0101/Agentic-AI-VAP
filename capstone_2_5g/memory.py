@@ -1,4 +1,4 @@
-"""Capstone 2 (5G NR): Persistent episodic memory wrapper."""
+"""Capstone 2 (5G NR): Save and read short AAR lessons in ChromaDB."""
 
 from __future__ import annotations
 

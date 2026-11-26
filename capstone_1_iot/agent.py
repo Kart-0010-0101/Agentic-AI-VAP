@@ -1,4 +1,4 @@
-"""Capstone 1 (IoT Fleet): Closed-loop ReAct fault diagnosis agent."""
+"""Capstone 1 (IoT Fleet): ReAct loop that finds and reports hardware faults."""
 
 from __future__ import annotations
 

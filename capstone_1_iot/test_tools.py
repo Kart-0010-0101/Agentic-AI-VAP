@@ -1,4 +1,4 @@
-"""Capstone 1 (IoT Fleet) automated verification suite."""
+"""Capstone 1 (IoT Fleet): Test missing file recovery, quarantine, and memory speedup."""
 
 from __future__ import annotations
 

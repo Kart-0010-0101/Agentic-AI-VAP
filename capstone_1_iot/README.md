@@ -1,6 +1,6 @@
-# Capstone 1 — Autonomous IoT Sensor Fleet Fault Diagnosis
+# Capstone 1 — IoT Fleet Fault Agent
 
-Inspects edge telemetry JSON against IRF540N MOSFET and thermal enclosure limits, quarantines corrupt/NaN records without crashing, self-heals missing paths, and stores After-Action Review rules in ChromaDB.
+Checks edge JSON logs against IRF540N MOSFET and enclosure heat limits, moves NaN rows to quarantine, fixes missing file paths, and stores AAR rules in ChromaDB.
 
 ```powershell
 uv run python capstone_1_iot/ingest.py

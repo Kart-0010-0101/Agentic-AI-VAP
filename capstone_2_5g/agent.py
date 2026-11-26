@@ -1,4 +1,4 @@
-"""Capstone 2 (5G NR): Closed-loop ReAct PRB & interference triage agent."""
+"""Capstone 2 (5G NR): ReAct loop that finds cell congestion and signal drops."""
 
 from __future__ import annotations
 

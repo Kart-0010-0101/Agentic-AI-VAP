@@ -1,4 +1,4 @@
-"""Capstone 2 (5G NR): Idempotent domain spec ingestion."""
+"""Capstone 2 (5G NR): Save radio SLA rules to ChromaDB safely."""
 
 from __future__ import annotations
 

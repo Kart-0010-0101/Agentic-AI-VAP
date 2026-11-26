@@ -1,4 +1,4 @@
-"""Capstone 3 (Research): Persistent episodic memory wrapper."""
+"""Capstone 3 (Research): Save and read short AAR lessons in ChromaDB."""
 
 from __future__ import annotations
 

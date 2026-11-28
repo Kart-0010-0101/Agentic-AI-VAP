@@ -1,0 +1,13 @@
+# Local environments & secrets
+.env
+.env.local
+.venv/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Office temporary lock files
+~$*

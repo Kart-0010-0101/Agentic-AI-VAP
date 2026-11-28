@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import json
 import os
 import sys
-import urllib.request
 import chromadb
+import requests
 from dotenv import load_dotenv
+
+DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
 
 
 def verify_environment() -> bool:
@@ -18,23 +19,24 @@ def verify_environment() -> bool:
         print("GROQ_API_KEY missing or placeholder in .env — skipping live network call.")
         return False
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    body = json.dumps({
-        "model": "llama-3.1-8b-instant",
-        "messages": [{"role": "user", "content": "Say hello in 1 word."}],
-        "max_tokens": 10,
-    }).encode("utf-8")
-    req = urllib.request.Request(
+    model = os.environ.get("GROQ_MODEL", DEFAULT_GROQ_MODEL).strip() or DEFAULT_GROQ_MODEL
+    resp = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
-        data=body,
-        headers=headers,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": [{"role": "user", "content": "Say hello in 1 word."}],
+            "max_tokens": 32,
+        },
+        timeout=20,
     )
-    with urllib.request.urlopen(req, timeout=20) as resp:
-        res = json.loads(resp.read().decode("utf-8"))
-    print("API Connected:", res["choices"][0]["message"]["content"])
+    resp.raise_for_status()
+    res = resp.json()
+    print("API Connected:", res["choices"][0]["message"]["content"].strip())
+    print("Model:", model)
     print("ChromaDB Version:", chromadb.__version__)
     return True
 

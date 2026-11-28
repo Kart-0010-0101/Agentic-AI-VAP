@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
-import urllib.request
 from pathlib import Path
 import chromadb
+import requests
 from dotenv import load_dotenv
 
 DEFAULT_DB_DIR = Path(__file__).resolve().parent / "chroma_db"
+DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
 
 
 def retrieve_context(
@@ -54,30 +54,30 @@ def synthesize_answer(question: str, chunks: list[dict], mock_llm: bool = False)
         top = chunks[0]
         return f"Grounded Answer (from [{top['source']}], dist={top['distance']}):\n{top['text']}"
 
-    payload = json.dumps({
-        "model": "llama-3.1-8b-instant",
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "Answer strictly using the provided technical context. "
-                    "Cite the source filename in brackets, e.g. [irf540n_mosfet.md]. "
-                    "If context is missing, say 'Insufficient evidence'."
-                ),
-            },
-            {"role": "user", "content": f"Context:\n{context_block}\n\nQuestion: {question}"},
-        ],
-        "temperature": 0.1,
-        "max_tokens": 350,
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
+    model = os.environ.get("GROQ_MODEL", DEFAULT_GROQ_MODEL).strip() or DEFAULT_GROQ_MODEL
+    resp = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
-        data=payload,
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json={
+            "model": model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "Answer strictly using the provided technical context. "
+                        "Cite the source filename in brackets, e.g. [irf540n_mosfet.md]. "
+                        "If context is missing, say 'Insufficient evidence'."
+                    ),
+                },
+                {"role": "user", "content": f"Context:\n{context_block}\n\nQuestion: {question}"},
+            ],
+            "temperature": 0.1,
+            "max_tokens": 350,
+        },
+        timeout=25,
     )
-    with urllib.request.urlopen(req, timeout=25) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    resp.raise_for_status()
+    data = resp.json()
     return data["choices"][0]["message"]["content"]
 
 

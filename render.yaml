@@ -14,4 +14,4 @@ services:
       - key: POLL_ADMIN_USER
         value: ECEKART
       - key: POLL_ADMIN_PASS
-        value: WasteOfTimeGG
+        value: 30december2222

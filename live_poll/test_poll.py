@@ -36,7 +36,7 @@ def test_live_poll_dual_basic_auth_and_end_to_end():
     thread.start()
     base = f"http://127.0.0.1:{port}"
     student = ("ECE", "december30")
-    admin = ("ECEKART", "WasteOfTimeGG")
+    admin = ("ECEKART", "30december2222")
     try:
         # Health probe works without auth for Render platform checks
         st, ct, _ = _req(base + "/health")

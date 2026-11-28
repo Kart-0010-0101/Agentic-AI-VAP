@@ -333,7 +333,7 @@ def create_server(
     s_user = student_user if student_user is not None else os.environ.get("POLL_STUDENT_USER", "ECE")
     s_pass = student_pass if student_pass is not None else os.environ.get("POLL_STUDENT_PASS", "december30")
     a_user = admin_user if admin_user is not None else os.environ.get("POLL_ADMIN_USER", "ECEKART")
-    a_pass = admin_pass if admin_pass is not None else os.environ.get("POLL_ADMIN_PASS", "WasteOfTimeGG")
+    a_pass = admin_pass if admin_pass is not None else os.environ.get("POLL_ADMIN_PASS", "30december2222")
     auth_kwargs = dict(
         student_user=s_user,
         student_pass=s_pass,

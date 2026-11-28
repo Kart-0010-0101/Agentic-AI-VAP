@@ -13,11 +13,17 @@ from evaluator.static_audit import audit_repository
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
+def _extract_full_reference(dest: Path, tmp_path: Path, tag: str) -> None:
+    """Combine Day 2 (Project 1 RAG) and Day 5 (Project 2 Capstone) like a student's final repo."""
+    for branch in ("day-2", "day-5"):
+        z = export_day_zip(REPO_ROOT, branch, tmp_path / f"{tag}_{branch}.zip")
+        with zipfile.ZipFile(z) as zf:
+            zf.extractall(dest)
+
+
 def test_day5_reference_scores_above_85(tmp_path: Path):
-    day5_zip = export_day_zip(REPO_ROOT, "day-5", tmp_path / "day5.zip")
     sub_dir = tmp_path / "student_day5"
-    with zipfile.ZipFile(day5_zip) as zf:
-        zf.extractall(sub_dir)
+    _extract_full_reference(sub_dir, tmp_path, "ref")
 
     result = evaluate_submission(sub_dir, student_name="ref_day5", out_dir=tmp_path / "reports")
     assert result["score"]["total_score"] >= 85
@@ -64,8 +70,7 @@ def test_release_day_exports_only_requested_branch_and_batch_leaderboard(tmp_pat
     sub_root = tmp_path / "cohort"
     s1 = sub_root / "alice"
     s1.mkdir(parents=True)
-    with zipfile.ZipFile(export_day_zip(REPO_ROOT, "day-5", tmp_path / "d5.zip")) as zf:
-        zf.extractall(s1)
+    _extract_full_reference(s1, tmp_path, "alice")
     csv_out = batch_grade_directory(sub_root, tmp_path / "leaderboard.csv")
     csv_text = csv_out.read_text(encoding="utf-8")
     assert "alice" in csv_text and "A+" in csv_text

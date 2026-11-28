@@ -1,0 +1,14 @@
+# Secrets & local environments
+.env
+.env.local
+.venv/
+
+# Python bytecode & caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Runtime poll outputs
+poll_state.json
+qr_poll_join.png

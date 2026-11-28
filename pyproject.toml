@@ -1,0 +1,13 @@
+[project]
+name = "agentic-ai-vap-live-poll"
+version = "0.1.0"
+description = "Anonymous classroom live phone poll server for the 5-Day Agentic AI VAP"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "qrcode[pil]>=8.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+]

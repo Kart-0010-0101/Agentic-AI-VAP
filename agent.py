@@ -6,14 +6,16 @@ import argparse
 import json
 import os
 import time
-import urllib.request
 from pathlib import Path
+import requests
 from dotenv import load_dotenv
 
 from aar_engine import distill_aar
 from generate_mock_data import ensure_sample_data
 from memory import EpisodicMemory
 from tools import TOOL_REGISTRY
+
+DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
 
 
 def _write_trace(trace_path: Path, entries: list[dict]) -> None:
@@ -30,25 +32,45 @@ def _llm_next_action(goal: str, history: list[dict], precedents: list[dict]) -> 
         raise RuntimeError("No valid GROQ_API_KEY configured; pass --mock-llm for offline mode.")
 
     sys_prompt = (
-        "You are an autonomous ReAct ECE engineering agent. Respond ONLY with valid JSON: "
-        '{"thought": "...", "tool": "list_dir|read_file|search_kb|write_report|FINAL_ANSWER", "args": {...}}.'
+        "Output ONLY a single raw JSON object starting with '{' and ending with '}'. "
+        "Never write text outside JSON. "
+        'Schema: {"thought": "...", "tool": "list_dir|read_file|search_kb|write_report|FINAL_ANSWER", "args": {...}}. '
+        "Tools: list_dir(directory), read_file(filepath), search_kb(query_text), write_report(filepath, content), FINAL_ANSWER(). "
+        "Use relative workspace paths (e.g. 'data', 'out/audit_report.md') and keep report under 150 words."
     )
     user_msg = json.dumps({"goal": goal, "recalled_lessons": precedents, "history": history[-6:]})
-    payload = json.dumps({
-        "model": "llama-3.1-8b-instant",
+    model = os.environ.get("GROQ_MODEL", DEFAULT_GROQ_MODEL).strip() or DEFAULT_GROQ_MODEL
+    payload = {
+        "model": model,
         "messages": [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_msg}],
         "temperature": 0.1,
-        "max_tokens": 300,
+        "max_tokens": 550,
         "response_format": {"type": "json_object"},
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=payload,
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req, timeout=25) as resp:
-        raw = json.loads(resp.read().decode("utf-8"))["choices"][0]["message"]["content"]
-    return json.loads(raw)
+    }
+    if "qwen" in model.lower():
+        payload["reasoning_effort"] = "none"
+    resp = None
+    for attempt in range(4):
+        req_body = dict(payload)
+        if attempt >= 1 and resp is not None and resp.status_code == 400:
+            req_body["messages"] = payload["messages"] + [
+                {"role": "user", "content": "Return ONLY a valid JSON object starting with '{'. No prose."}
+            ]
+            req_body["max_tokens"] = 700
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json=req_body,
+            timeout=30,
+        )
+        if resp.status_code not in (400, 429) or attempt == 3:
+            break
+        wait_s = min(float(resp.headers.get("Retry-After", 4 * (attempt + 1))), 25.0) if resp.status_code == 429 else 1.0
+        time.sleep(wait_s)
+    resp.raise_for_status()
+    raw = resp.json()["choices"][0]["message"]["content"].strip()
+    start, end = raw.find("{"), raw.rfind("}")
+    return json.loads(raw[start : end + 1] if start != -1 and end > start else raw)
 
 
 def _mock_next_action(step: int, history: list[dict], precedents: list[dict]) -> dict:
@@ -126,7 +148,10 @@ def run_agent(
         if fn is None:
             obs = {"ok": False, "error": "UnknownTool", "detail": f"Tool '{tool_name}' not registered."}
         else:
-            obs = fn(workdir, **args)
+            try:
+                obs = fn(workdir, **args)
+            except Exception as exc:
+                obs = {"ok": False, "error": type(exc).__name__, "detail": str(exc)}
 
         status = "ok" if obs.get("ok") else "error"
         if status == "ok" and any(e.get("status") == "error" for e in trace):

@@ -15,5 +15,3 @@ agent_memory/
 capstone_memory/
 out/
 *.jsonl
-poll_state.json
-qr_poll_join.png

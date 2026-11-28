@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from query import retrieve_context
+import chromadb
 
 
 def _resolve_safe(workdir: Path, rel_path: str) -> Path:
@@ -52,7 +52,23 @@ def read_file(workdir: Path, filepath: str) -> dict:
 def search_kb(workdir: Path, query_text: str) -> dict:
     """Search the local ChromaDB knowledge base."""
     try:
-        hits = retrieve_context(query_text, db_dir=workdir / "chroma_db", top_k=2)
+        if not query_text.strip():
+            return {"ok": True, "hits": []}
+        client = chromadb.PersistentClient(path=str(workdir / "chroma_db"))
+        col = client.get_or_create_collection("ece_knowledge")
+        count = col.count()
+        if count == 0:
+            return {"ok": True, "hits": []}
+        res = col.query(
+            query_texts=[query_text],
+            n_results=min(2, count),
+            include=["documents", "metadatas", "distances"],
+        )
+        hits = [
+            {"source": meta.get("source", "unknown"), "distance": round(float(dist), 4), "text": doc}
+            for doc, meta, dist in zip(res["documents"][0], res["metadatas"][0], res["distances"][0])
+            if dist <= 1.65
+        ]
         return {"ok": True, "hits": hits}
     except Exception as exc:
         return {"ok": False, "error": type(exc).__name__, "detail": str(exc)}

@@ -9,8 +9,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 SUITES = [
-    ("Day 2 Vector RAG", "test_rag.py"),
-    ("Day 3 ReAct + Memory", "test_agent.py"),
     ("Capstone 1: IoT Fleet", "capstone_1_iot/test_tools.py"),
     ("Capstone 2: 5G NR", "capstone_2_5g/test_tools.py"),
     ("Capstone 3: Research", "capstone_3_research/test_tools.py"),

@@ -8,7 +8,7 @@ Welcome to Day 5 of **AGENTIC AI VAP**. This branch adds toxic JSON fault handli
 - `testing/test_cross_session_memory.py` — Checks faster Run 2 steps from ChromaDB memory
 - `testing/test_trace_contract.py` — Checks the 7 fixed JSON keys in `trace.jsonl`
 - `testing/test_repo_hygiene.py` — Checks for leaked `.env` files or API keys
-- `testing/run_all_tests.py` — Runs all 9 test suites and prints the summary table
+- `testing/run_all_tests.py` — Runs all 7 Day 5 capstone and fault-injection test suites and prints the summary table
 
 ## Run All Checks
 ```powershell

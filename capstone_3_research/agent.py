@@ -1,4 +1,4 @@
-"""Capstone 3 (Research): Closed-loop ReAct literature & benchmark synthesis agent."""
+"""Capstone 3 (Research): ReAct loop that screens papers by latency and F1 limits."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import argparse
 import json
 import os
 import time
-import urllib.request
 from pathlib import Path
+import requests
 from dotenv import load_dotenv
 
 try:
@@ -19,26 +19,58 @@ except ImportError:
     from memory import EpisodicMemory
     from tools import TOOL_REGISTRY
 
+DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
+
 
 def _llm_decide(goal: str, trace: list[dict], precedents: list[dict]) -> dict:
     load_dotenv()
     key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key or key == "gsk_replace_with_your_real_key":
         raise RuntimeError("Missing GROQ_API_KEY; use --mock-llm offline.")
-    payload = json.dumps({
-        "model": "llama-3.1-8b-instant",
+    model = os.environ.get("GROQ_MODEL", DEFAULT_GROQ_MODEL).strip() or DEFAULT_GROQ_MODEL
+    payload = {
+        "model": model,
         "messages": [
-            {"role": "system", "content": 'Return JSON {"thought": "...", "tool": "list_dir|read_papers|query_standards|write_report|FINAL_ANSWER", "args": {...}}.'},
+            {
+                "role": "system",
+                "content": (
+                    "Output ONLY a single raw JSON object starting with '{' and ending with '}'. "
+                    "Never write text outside JSON. "
+                    'Schema: {"thought": "...", "tool": "list_dir|read_papers|query_standards|write_report|FINAL_ANSWER", "args": {...}}. '
+                    "Tools: list_dir(directory), read_papers(filepath), query_standards(query_text), write_report(filepath, content), FINAL_ANSWER(). "
+                    "Use relative workspace paths (e.g. 'data', 'out/research_report.md') and keep report under 150 words."
+                ),
+            },
             {"role": "user", "content": json.dumps({"goal": goal, "precedents": precedents, "trace": trace[-5:]})},
         ],
         "temperature": 0.1,
-        "max_tokens": 300,
+        "max_tokens": 550,
         "response_format": {"type": "json_object"},
-    }).encode("utf-8")
-    req = urllib.request.Request("https://api.groq.com/openai/v1/chat/completions", data=payload,
-                                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=25) as resp:
-        return json.loads(json.loads(resp.read().decode("utf-8"))["choices"][0]["message"]["content"])
+    }
+    if "qwen" in model.lower():
+        payload["reasoning_effort"] = "none"
+    resp = None
+    for attempt in range(4):
+        req_body = dict(payload)
+        if attempt >= 1 and resp is not None and resp.status_code == 400:
+            req_body["messages"] = payload["messages"] + [
+                {"role": "user", "content": "Return ONLY a valid JSON object starting with '{'. No prose."}
+            ]
+            req_body["max_tokens"] = 700
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json=req_body,
+            timeout=30,
+        )
+        if resp.status_code not in (400, 429) or attempt == 3:
+            break
+        wait_s = min(float(resp.headers.get("Retry-After", 4 * (attempt + 1))), 25.0) if resp.status_code == 429 else 1.0
+        time.sleep(wait_s)
+    resp.raise_for_status()
+    raw = resp.json()["choices"][0]["message"]["content"].strip()
+    start, end = raw.find("{"), raw.rfind("}")
+    return json.loads(raw[start : end + 1] if start != -1 and end > start else raw)
 
 
 def _mock_decide(step: int, trace: list[dict], precedents: list[dict], papers_rel: str) -> dict:
@@ -96,7 +128,13 @@ def run_agent(
         if tool == "FINAL_ANSWER":
             break
         fn = TOOL_REGISTRY.get(tool)
-        obs = fn(workdir, **args) if fn else {"ok": False, "error": "UnknownTool"}
+        if fn is None:
+            obs = {"ok": False, "error": "UnknownTool"}
+        else:
+            try:
+                obs = fn(workdir, **args)
+            except Exception as exc:
+                obs = {"ok": False, "error": type(exc).__name__, "detail": str(exc)}
         status = "ok" if obs.get("ok") else "error"
         if status == "ok" and any(e["status"] == "error" for e in trace):
             status = "recovered"
